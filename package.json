@@ -1,0 +1,25 @@
+{
+  "name": "file-manager",
+  "version": "1.0.0",
+  "description": "This repository is the part of nodejs-assignments https://github.com/AlreadyBored/nodejs-assignments",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "main": "index.js",
+  "type": "module",
+
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "nodejs",
+    "assignments",
+    "bartigorfs"
+  ],
+  "author": "Igor Bartashevich",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bartigorfs/file-manager/issues"
+  },
+  "homepage": "https://github.com/bartigorfs/file-manager#readme"
+}
