@@ -3,13 +3,9 @@ import {createInterface} from 'node:readline/promises';
 import {processCmd} from "./utils/cmd.js";
 import {log} from "./utils/prettyLog.js";
 import {baseHomeDir} from "./utils/os.js";
-import {getCurrentDir} from "./utils/fs.js";
+import {getCurrentDir, writeGreetings} from "./utils/utils.js";
 
 import {getUsername} from "./args/argv.js";
-
-const writeGreetings = () => {
-    log.success(`Welcome to the File Manager, ${getUsername()}! \n`)
-}
 
 const bootstrap = async () => {
     writeGreetings();

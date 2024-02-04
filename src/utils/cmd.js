@@ -1,39 +1,11 @@
-import {baseHomeDir, getCpus, getEOL, getSystemUserName, getArch} from "./os.js";
-import {calculateHash, changeDir, getFolderLs} from "./fs.js";
-import {log} from "./prettyLog.js";
 import path from "node:path";
 
-const trimParams = (params) => {
-    if (Array.isArray(params)) {
-        return params.map(param => param.replace('--', ''));
-    } else return params.replace('--', '');
-}
-
-const checkArgs = (params, minLength = 1) => {
-    if (Array.isArray(params)) {
-        if (params.length < minLength) {
-            log.warning('Please specify params\n')
-            return false;
-        }
-        return true;
-    } else {
-        if (!params) {
-            log.warning('Please specify param\n')
-            return false;
-        }
-        return true;
-    }
-}
-
-function isValidPath(str) {
-    try {
-        const normalizedPath = path.normalize(str);
-        const isAbsolutePath = path.isAbsolute(normalizedPath);
-        return isAbsolutePath || normalizedPath.startsWith('.');
-    } catch (error) {
-        return false;
-    }
-}
+import {baseHomeDir, getArch, getCpus, getEOL, getSystemUserName} from "./os.js";
+import {changeDir, checkArgs, isValidPath, prettifyParams, trimParams} from "./utils.js";
+import {log} from "./prettyLog.js";
+import {calculateHash} from "./streams/hash.js";
+import {getFolderLs} from "./streams/ls.js";
+import {readFile} from "./streams/readFile.js";
 
 export const processCmd = async (chunk) => {
     const [cmd, ...paramsArr] = chunk.split(' ');
@@ -61,19 +33,28 @@ export const processCmd = async (chunk) => {
             return console.table(await getFolderLs(directory), ['Name', 'Type']);
         case 'hash': {
             if (!checkArgs(paramsArr)) return log.warning('Please specify params\n');
-            const fileName = paramsArr[0];
+            const prettyParams = prettifyParams(paramsArr);
+            const fileName = prettyParams[0];
             await calculateHash(fileName);
             break;
         }
         case 'cd': {
             if (checkArgs(paramsArr)) {
-                const newPath = paramsArr[0];
+                const prettyParams = prettifyParams(paramsArr);
+
+                const newPath = prettyParams[0];
 
                 if (!isValidPath(newPath)) {
                     const newDirectory = path.join(process.cwd(), newPath);
                     changeDir(newDirectory);
                 } else changeDir(newPath);
             }
+            break;
+        }
+        case 'cat': {
+            const prettyParams = prettifyParams(paramsArr);
+            if (!checkArgs(prettyParams)) return log.warning('Please specify params\n');
+            await readFile(prettyParams[0]);
             break;
         }
         default:
