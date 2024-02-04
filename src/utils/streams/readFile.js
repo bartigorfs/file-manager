@@ -4,7 +4,6 @@ import {log} from "../prettyLog.js";
 import path from "node:path";
 
 export const readFile = async (filename) => {
-
     try {
         const FILE_PATH = path.join(process.cwd(), filename);
         await fs.access(FILE_PATH, fs.constants.R_OK)

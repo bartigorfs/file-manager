@@ -62,17 +62,9 @@ export const trimParams = (params) => {
 
 export const checkArgs = (params, minLength = 1) => {
     if (Array.isArray(params)) {
-        if (params.length < minLength) {
-            log.warning('Please specify params\n')
-            return false;
-        }
-        return true;
+        return params.length >= minLength;
     } else {
-        if (!params) {
-            log.warning('Please specify param\n')
-            return false;
-        }
-        return true;
+        return params;
     }
 }
 
@@ -129,3 +121,21 @@ export function parseCpuInfo(output) {
 export const prettyCpuSpeed = (speed) => {
     return (speed / CPU_SPEED_MODIFIER).toFixed(2) + ' GHz'
 }
+
+export const isFileExists = async (fileRoute) => {
+    try {
+        await fs.access(fileRoute, fs.constants.R_OK || fs.constants.W_OK);
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+export const isDirectoryExists = async (dirPath) => {
+    try {
+        const stats = await fs.stat(dirPath);
+        return stats.isDirectory();
+    } catch (error) {
+        return false;
+    }
+};
