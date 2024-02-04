@@ -1,8 +1,6 @@
 import * as path from 'node:path';
 import fs from "node:fs/promises";
 import {fileURLToPath} from 'url';
-import {baseHomeDir} from "./os.js";
-import {getCurrentDirectory} from "./memodir.js";
 import {createReadStream} from "node:fs";
 import {Transform} from "node:stream";
 import {createHash} from "node:crypto";
@@ -23,29 +21,38 @@ const EntityTypesMap = {
     'FIFO pipe': entity => entity.isFIFO(),
 }
 
-export const entityTypeCheck = async (entity, findPath = baseHomeDir) => {
-    const entityStat = await fs.lstat(path.join(findPath, entity));
-    return Object.entries(EntityTypesMap).find(([_, check]) => (check(entityStat)))?.[0];
+export const entityTypeCheck = async (entity, findPath = process.cwd()) => {
+    try {
+        await fs.access(path.join(findPath, entity), fs.constants.F_OK);
+        const entityStat = await fs.lstat(path.join(findPath, entity));
+        return Object.entries(EntityTypesMap).find(([_, check]) => (check(entityStat)))?.[0];
+    } catch (e) {
+        return e.message.split(',')[0];
+    }
 }
 
-export const getFolderLs = async (folder = baseHomeDir) => {
-    //TODO: Check directory!
-    const entities = await fs.readdir(baseHomeDir);
+export const getFolderLs = async (folder) => {
+    try {
+        const entities = await fs.readdir(folder);
 
-    const entityPromises = entities.map(async entity => {
-        const entity_type = await entityTypeCheck(entity);
-        return {
-            Name: entity,
-            Type: entity_type
-        };
-    });
+        const entityPromises = entities.map(async entity => {
+            const entity_type = await entityTypeCheck(entity);
+            return {
+                Name: entity,
+                Type: entity_type
+            };
+        });
 
-    return Promise.all(entityPromises);
+        return Promise.all(entityPromises);
+    } catch (e) {
+        log.error('Operation failed')
+    }
+
 };
 
 export const calculateHash = async (filename) => {
     try {
-        const FILE_PATH = path.join(getCurrentDirectory(), filename);
+        const FILE_PATH = path.join(process.cwd(), filename);
 
         await fs.access(FILE_PATH, fs.constants.R_OK)
 
@@ -71,5 +78,13 @@ export const calculateHash = async (filename) => {
 }
 
 export const getCurrentDir = () => {
-    console.log(`You are currently in ${getCurrentDirectory()}`);
+    console.log(`You are currently in ${process.cwd()}`);
+}
+
+export const changeDir = (newPath) => {
+    try {
+        process.chdir(newPath);
+    } catch (e) {
+        log.warning('Operation failed\n')
+    }
 }
