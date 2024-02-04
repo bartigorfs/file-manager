@@ -3,7 +3,6 @@ import path from "node:path";
 import {isDirectoryExists, isFileExists} from "../utils.js";
 import fs from "node:fs/promises";
 import {createReadStream, createWriteStream} from "node:fs";
-import {createFile} from "../simpleFs.js";
 
 export const copyFile = async (pathToFile, pathToNewDir) => {
     try {
