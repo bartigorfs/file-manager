@@ -8,7 +8,8 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node ./src/index.js"
+    "start": "node ./src/index.js",
+    "start:wn": "node ./src/index.js -- --username Shreck"
   },
   "keywords": [
     "nodejs",
