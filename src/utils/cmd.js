@@ -18,7 +18,7 @@ export const processCmd = async (chunk) => {
                 case 'EOL':
                     return console.log(getEOL());
                 case 'cpus':
-                    return console.log(getCpus());
+                    return console.log(await getCpus());
                 case 'homedir':
                     return console.log(baseHomeDir);
                 case 'username':
@@ -55,6 +55,10 @@ export const processCmd = async (chunk) => {
             const prettyParams = prettifyParams(paramsArr);
             if (!checkArgs(prettyParams)) return log.warning('Please specify params\n');
             await readFile(prettyParams[0]);
+            break;
+        }
+        case 'up': {
+            process.chdir('..');
             break;
         }
         default:

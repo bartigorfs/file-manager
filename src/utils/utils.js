@@ -1,11 +1,9 @@
 import * as path from 'node:path';
 import fs from "node:fs/promises";
-import {fileURLToPath} from 'url';
 import {log} from "./prettyLog.js";
 import {getUsername} from "../args/argv.js";
 
-export const __filename = fileURLToPath(import.meta.url);
-export const __dirname = path.dirname(__filename);
+const CPU_SPEED_MODIFIER = 1000;
 
 /*
 Used to get file type in entityTypeCheck();
@@ -92,11 +90,42 @@ export const prettifyParams = (params) => {
     const joinedParams = params.join(' ');
 
     const paramRegex = /"([^"]+)"/g;
-    let match;
     const prettifiedParams = [];
+    let match;
 
     while ((match = paramRegex.exec(joinedParams)) !== null) {
         prettifiedParams.push(match[1]);
     }
     return prettifiedParams;
+}
+
+export function parseCpuInfo(output) {
+    const cpuInfo = [];
+
+    output.split('\n').forEach((line, index, array) => {
+        if (index % 2 === 0 && index < array.length - 1) {
+            const [key, ...values] = line.split(':').map(entry => entry.trim());
+            const [secondKey, ...secondValues] = array[index + 1].split(':').map(entry => entry.trim());
+
+            const formattedKey = key?.replace(/\s/g, '') === 'modelname'
+                ? 'model'
+                : 'speed';
+            const secFormattedKey = secondKey?.replace(/\s/g, '') === 'cpuMHz'
+                ? 'speed'
+                : 'model';
+
+            if (formattedKey && secFormattedKey && values.length > 0 && secondValues.length > 0) {
+                cpuInfo.push({
+                    [formattedKey]: values.join(':').trim(),
+                    [secFormattedKey]: prettyCpuSpeed(Number(secondValues.join(':').trim()))
+                });
+            }
+        }
+    });
+
+    return [...cpuInfo];
+}
+
+export const prettyCpuSpeed = (speed) => {
+    return (speed / CPU_SPEED_MODIFIER).toFixed(2) + ' GHz'
 }

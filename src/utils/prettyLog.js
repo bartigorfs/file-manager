@@ -1,5 +1,5 @@
 /*
-Pretty stdout feature, thanks to student in Discord.
+Pretty stdout feature, thanks to student in Discord (I don't remember his nn).
 Please, do not count this as Module when you'll be checking, this is not my module, just a funky thing
 Link: https://muffinman.io/blog/nodejs-simple-colorful-logging/
  */
