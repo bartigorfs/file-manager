@@ -54,12 +54,18 @@ export const writeGreetings = () => {
     log.success(`Welcome to the File Manager, ${getUsername()}! \n`)
 }
 
+/*
+Trim -- for simplicity
+ */
 export const trimParams = (params) => {
     if (Array.isArray(params)) {
         return params.map(param => param.replace('--', ''));
     } else return params.replace('--', '');
 }
 
+/*
+Checks if args is presented and have required length
+ */
 export const checkArgs = (params, minLength = 1) => {
     if (Array.isArray(params)) {
         return params.length >= minLength;
@@ -68,29 +74,18 @@ export const checkArgs = (params, minLength = 1) => {
     }
 }
 
-export const isValidPath = (str) => {
-    try {
-        const normalizedPath = path.normalize(str);
-        const isAbsolutePath = path.isAbsolute(normalizedPath);
-        return isAbsolutePath || normalizedPath.startsWith('.');
-    } catch (error) {
-        return false;
-    }
+/*
+Parse string with command and params
+ */
+export const parseCommand = (chunk) => {
+    const chunks = chunk.match(/"([^"]+)"|(\S+)/g) || [];
+    const [cmd, ...paramsArr] = chunks.map(chunk => chunk.replace(/"/g, ''));
+    return {cmd, params: paramsArr.length > 0 ? paramsArr : chunk.includes('"') ? [chunk] : chunk.split(' ').slice(1)};
 }
 
-export const prettifyParams = (params) => {
-    const joinedParams = params.join(' ');
-
-    const paramRegex = /"([^"]+)"/g;
-    const prettifiedParams = [];
-    let match;
-
-    while ((match = paramRegex.exec(joinedParams)) !== null) {
-        prettifiedParams.push(match[1]);
-    }
-    return prettifiedParams;
-}
-
+/*
+Helper to parse result of cat /proc/cpuinfo | grep -E 'model name|cpu MHz' in cp
+*/
 export function parseCpuInfo(output) {
     const cpuInfo = [];
 
@@ -118,10 +113,16 @@ export function parseCpuInfo(output) {
     return [...cpuInfo];
 }
 
+/*
+Core speed MHz to GHz
+ */
 export const prettyCpuSpeed = (speed) => {
     return (speed / CPU_SPEED_MODIFIER).toFixed(2) + ' GHz'
 }
 
+/*
+Checks if file exists
+ */
 export const isFileExists = async (fileRoute) => {
     try {
         await fs.access(fileRoute, fs.constants.R_OK || fs.constants.W_OK);
@@ -131,6 +132,9 @@ export const isFileExists = async (fileRoute) => {
     }
 }
 
+/*
+Checks if folder exists
+ */
 export const isDirectoryExists = async (dirPath) => {
     try {
         const stats = await fs.stat(dirPath);

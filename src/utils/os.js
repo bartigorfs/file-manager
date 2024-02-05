@@ -12,10 +12,10 @@ export const getCpus = async () => {
         const osType = type();
 
         if (!osType)
-            throw Error('Cannot get OS Type!');
+            return `Operation failed\n`;
 
         if (osType === 'Linux') {
-            return  await getLinuxCpuProc();
+            return await getLinuxCpuProc() || [];
         }
 
         return cpus().map(cpu => ({
@@ -23,7 +23,7 @@ export const getCpus = async () => {
             speed: prettyCpuSpeed(cpu?.speed)
         }))
     } catch (e) {
-        return `Operation failed ${e && ', Error: ' + e.message}`
+        return `Operation failed\n`
     }
 }
 
@@ -31,15 +31,15 @@ export const getArch = () => {
     try {
         return arch();
     } catch (e) {
-        return 'Operation failed';
+        return 'Operation failed\n';
     }
 };
 
 export const getSystemUserName = () => {
     try {
         return userInfo()?.username
-    } catch (e){
-        return 'Operation failed';
+    } catch (e) {
+        return 'Operation failed\n';
     }
 };
 

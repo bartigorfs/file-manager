@@ -1,51 +1,58 @@
-import path from "node:path";
-
 import {baseHomeDir, getArch, getCpus, getEOL, getSystemUserName} from "./os.js";
-import {changeDir, checkArgs, prettifyParams, trimParams} from "./utils.js";
+import {changeDir, checkArgs, parseCommand, trimParams} from "./utils.js";
 import {log} from "./prettyLog.js";
 import {calculateHash} from "./streams/hash.js";
 import {deleteFile, getFolderLs, renameFile} from "./simpleFs.js";
 import {readFile} from "./streams/readFile.js";
 import {createFile} from "./simpleFs.js";
 import {copyFile} from "./streams/copy.js";
+import {brotliCompress} from "./streams/brotli-zip.js";
+import {moveFile} from "./streams/move.js";
 
 export const processCmd = async (chunk) => {
-    const [cmd, ...paramsArr] = chunk.split(' ');
+    const {cmd, params} = parseCommand(chunk);
 
     switch (cmd) {
         case 'ls':
             const directory = process.cwd();
             return console.table(await getFolderLs(directory), ['Name', 'Type']);
         case 'cd': {
-            if (!checkArgs(paramsArr)) return log.warning('Invalid input\n');
-            const newPath = paramsArr[0];
+            if (!checkArgs(params)) return log.warning('Invalid input\n');
+            const newPath = params[0];
             changeDir(newPath);
             break;
         }
         case 'add': {
-            if (!checkArgs(paramsArr)) return log.warning('Invalid input\n');
-            const newFileName = paramsArr[0];
+            if (!checkArgs(params)) return log.warning('Invalid input\n');
+            const newFileName = params[0];
             await createFile(newFileName);
             break;
         }
         case 'rm': {
-            if (!checkArgs(paramsArr)) return log.warning('Invalid input\n');
-            const deleteFileName = paramsArr[0];
+            if (!checkArgs(params)) return log.warning('Invalid input\n');
+            const deleteFileName = params[0];
             await deleteFile(deleteFileName);
             break;
         }
         case 'rn': {
-            if (!checkArgs(paramsArr, 2)) return log.warning('Invalid input\n');
-            const oldFileName = paramsArr[0];
-            const newFileName = paramsArr[1];
+            if (!checkArgs(params, 2)) return log.warning('Invalid input\n');
+            const oldFileName = params[0];
+            const newFileName = params[1];
             await renameFile(oldFileName, newFileName);
             break;
         }
         case 'cp': {
-            if (!checkArgs(paramsArr, 2)) return log.warning('Invalid input\n');
-            const fileToCopy = paramsArr[0];
-            const folderToCopy = paramsArr[1];
+            if (!checkArgs(params, 2)) return log.warning('Invalid input\n');
+            const fileToCopy = params[0];
+            const folderToCopy = params[1];
             await copyFile(fileToCopy, folderToCopy);
+            break;
+        }
+        case 'mv': {
+            if (!checkArgs(params, 2)) return log.warning('Invalid input\n');
+            const fileToCopy = params[0];
+            const folderToCopy = params[1];
+            await moveFile(fileToCopy, folderToCopy);
             break;
         }
         case 'up': {
@@ -53,23 +60,35 @@ export const processCmd = async (chunk) => {
             break;
         }
         case 'cat': {
-            const prettyParams = prettifyParams(paramsArr);
-            if (!checkArgs(prettyParams)) return log.warning('Invalid input\n');
-            await readFile(prettyParams[0]);
+            if (!checkArgs(params)) return log.warning('Invalid input\n');
+            await readFile(params[0]);
             break;
         }
         case 'hash': {
-            if (!checkArgs(paramsArr)) return log.warning('Invalid input\n');
-            const prettyParams = prettifyParams(paramsArr);
-            const fileName = prettyParams[0];
+            if (!checkArgs(params)) return log.warning('Invalid input\n');
+            const fileName = params[0];
             await calculateHash(fileName);
             break;
         }
+        case 'compress' : {
+            if (!checkArgs(params, 2)) return log.warning('Invalid input\n');
+            const fileToCopy = params[0];
+            const folderToCopy = params[1];
+            await brotliCompress(fileToCopy, folderToCopy, true);
+            break;
+        }
+        case 'decompress' : {
+            if (!checkArgs(params, 2)) return log.warning('Invalid input\n');
+            const fileToCopy = params[0];
+            const folderToCopy = params[1];
+            await brotliCompress(fileToCopy, folderToCopy, false);
+            break;
+        }
         case 'os': {
-            const params = paramsArr.join(' ').trim();
-            if (trimParams(params).length <= 0) return log.warning('Invalid input\n');
+            const os_params = params.join(' ').trim();
+            if (trimParams(os_params).length <= 0) return log.warning('Invalid input\n');
 
-            switch (trimParams(params)) {
+            switch (trimParams(os_params)) {
                 case 'EOL':
                     return console.log(getEOL());
                 case 'cpus':

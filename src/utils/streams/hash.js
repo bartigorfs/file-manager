@@ -7,7 +7,7 @@ import {log} from "../prettyLog.js";
 
 export const calculateHash = async (filename) => {
     try {
-        const FILE_PATH = path.join(process.cwd(), filename);
+        const FILE_PATH = path.resolve(filename);
         await fs.access(FILE_PATH, fs.constants.R_OK)
         const READ_STREAM = createReadStream(FILE_PATH).setEncoding('utf-8');
 
@@ -21,9 +21,9 @@ export const calculateHash = async (filename) => {
             process.stdout.write(data + '\n');
         });
         READ_STREAM.on('error', (err) => {
-            log.error('Operation failed')
+            log.error('Operation failed\n')
         });
     } catch (e) {
-        log.error('Operation failed')
+        log.error('Operation failed\n')
     }
 }
