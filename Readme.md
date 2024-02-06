@@ -12,3 +12,4 @@
 * OS: 
   * Implemented os --cpus only on Windows and Linux systems. (On Darwin it may not work)
 * GH Usernames: barta is my PC Name
+* Fixed pull request from dev to master
